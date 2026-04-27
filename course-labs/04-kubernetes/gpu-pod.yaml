@@ -1,0 +1,28 @@
+# ============================================================
+# GPU Pod — 申請 1 張 GPU，執行 nvidia-smi 驗證
+# 前提：節點已安裝 NVIDIA Driver + Container Toolkit
+#        且 nvidia-device-plugin DaemonSet 正在運行
+# 用法：
+#   kubectl apply -f gpu-pod.yaml
+#   kubectl logs gpu-job
+#   kubectl delete pod gpu-job
+# ============================================================
+apiVersion: v1
+kind: Pod
+metadata:
+  name: gpu-job
+spec:
+  containers:
+    - name: cuda-container
+      image: nvidia/cuda:12.2.0-base-ubuntu22.04
+      command: ["nvidia-smi"]
+      resources:
+        limits:
+          nvidia.com/gpu: 1          # 申請 1 張 GPU（必須是整數）
+        requests:
+          memory: "4Gi"
+          cpu: "2"
+  # 指定含 GPU 的節點（按型號過濾，標籤由 Device Plugin 自動打）
+  # nodeSelector:
+  #   nvidia.com/gpu.product: Tesla-V100-SXM2-32GB
+  restartPolicy: Never

@@ -1,0 +1,42 @@
+# ============================================================
+# Ingress — HTTP 路由範例
+# 前提：已安裝 ingress-nginx controller
+#   helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+#   helm install ingress-nginx ingress-nginx/ingress-nginx \
+#       --namespace ingress-nginx --create-namespace
+# ============================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: my-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: api.example.com          # ← 改成你的域名，或用 /etc/hosts 模擬
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: web-app-clusterip
+                port:
+                  number: 80
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: nginx-svc
+                port:
+                  number: 80
+
+# ── 本機測試（無 DNS）──────────────────────────────────────────
+# 取得 ingress-nginx 的外部 IP：
+#   kubectl get svc -n ingress-nginx
+#
+# 加入 /etc/hosts（Mac/Linux）：
+#   echo "192.168.1.200 api.example.com" | sudo tee -a /etc/hosts
+#
+# 測試：curl http://api.example.com/api

@@ -1,0 +1,41 @@
+# ============================================================
+# Docker Compose — Flask API + PostgreSQL
+# 用法：
+#   docker compose up -d      # 背景啟動
+#   docker compose logs -f    # 追蹤 log
+#   docker compose ps         # 查看狀態
+#   docker compose down       # 停止並移除容器
+#   docker compose down -v    # 同時刪除 volume
+# ============================================================
+
+services:
+  web:
+    build: .                         # 從當前目錄 Dockerfile 建立
+    # image: myapp:v1               # 或直接指定 image
+    ports:
+      - "5000:5000"
+    environment:
+      - APP_ENV=development
+      - DATABASE_URL=postgresql://appuser:secret@db:5432/mydb
+    depends_on:
+      db:
+        condition: service_healthy   # 等 db 健康才啟動
+    restart: unless-stopped
+
+  db:
+    image: postgres:15-alpine
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: appuser
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: mydb
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U appuser -d mydb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  pgdata:                            # Named volume，由 Docker 管理

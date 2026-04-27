@@ -1,0 +1,31 @@
+# ============================================================
+# MetalLB LoadBalancer 設定（裸機 K8s 用）
+# 安裝指令：
+#   kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.3/config/manifests/metallb-native.yaml
+#   kubectl apply -f metallb-config.yaml
+# ============================================================
+
+# ── IP 位址池（改成你的本地 IP 段）──────────────────────────────
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: local-pool
+  namespace: metallb-system
+spec:
+  addresses:
+    - 192.168.1.200-192.168.1.250   # ← 改成你的環境可用 IP 範圍
+---
+# ── L2 廣播宣告（讓 LB IP 在 LAN 內可達）────────────────────────
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: local-l2
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+    - local-pool
+
+# ── 建立 LoadBalancer Service ──────────────────────────────────
+# kubectl expose deploy nginx --type=LoadBalancer --port=80
+# kubectl get svc nginx
+# → EXTERNAL-IP 欄位會顯示從池中分配的 IP

@@ -1,0 +1,41 @@
+# ============================================================
+# K8s Job — 多節點分散式 GPU 訓練（PyTorch DDP）
+# ============================================================
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: dist-train
+spec:
+  parallelism: 2         # 同時執行 2 個 Pod（= 2 個節點）
+  completions: 2
+  backoffLimit: 0        # 失敗不重試
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: trainer
+          image: pytorch/pytorch:2.1.0-cuda12.1-cudnn8-runtime
+          command:
+            - torchrun
+            - "--nproc_per_node=4"   # 每個節點 4 張 GPU
+            - "--nnodes=2"
+            - "--node_rank=$(JOB_COMPLETION_INDEX)"
+            - "--master_addr=dist-train-0.dist-train"
+            - "--master_port=29500"
+            - "train.py"
+          resources:
+            limits:
+              nvidia.com/gpu: 4
+          env:
+            - name: JOB_COMPLETION_INDEX
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.annotations['batch.kubernetes.io/job-completion-index']
+      # 所有副本排在同一區域（減少網路延遲）
+      # affinity:
+      #   podAffinity:
+      #     requiredDuringSchedulingIgnoredDuringExecution:
+      #     - labelSelector:
+      #         matchLabels:
+      #           job-name: dist-train
+      #       topologyKey: topology.kubernetes.io/zone

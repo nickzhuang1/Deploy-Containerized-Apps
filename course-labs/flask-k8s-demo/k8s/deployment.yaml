@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-demo
+  namespace: default
+  labels:
+    app: flask-demo
+spec:
+  replicas: 3                        # 3 個 replica，curl 多次可以看到不同 pod_name
+  selector:
+    matchLabels:
+      app: flask-demo
+  template:
+    metadata:
+      labels:
+        app: flask-demo
+    spec:
+      containers:
+      - name: flask-demo
+        image: flask-demo:v1         # ← 改成你的 registry，例如 192.168.1.200/myproject/flask-demo:v1
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5000
+
+        # ── 從 ConfigMap 注入環境變數 ────────────────────────────────────
+        envFrom:
+        - configMapRef:
+            name: flask-demo-config
+
+        # ── 從 Downward API 注入 Pod 自身資訊 ───────────────────────────
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+
+        # ── Resource Limits ──────────────────────────────────────────────
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "64Mi"
+          limits:
+            cpu: "200m"
+            memory: "128Mi"
+
+        # ── Liveness Probe：Pod 掛了自動重啟 ────────────────────────────
+        livenessProbe:
+          httpGet:
+            path: /health/live
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+
+        # ── Readiness Probe：Ready 才接流量 ─────────────────────────────
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: 5000
+          initialDelaySeconds: 3
+          periodSeconds: 5

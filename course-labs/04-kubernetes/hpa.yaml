@@ -1,0 +1,39 @@
+# ============================================================
+# HPA — 水平自動擴縮容
+# 前提：已安裝 Metrics Server
+#   kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+# ============================================================
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: web-app-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: web-app
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 50     # CPU 超過 50% 開始擴容
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80     # 記憶體超過 80% 也觸發擴容
+
+# ── 驗證指令 ─────────────────────────────────────────────────
+# kubectl get hpa
+# kubectl describe hpa web-app-hpa
+#
+# 壓力測試（觀察自動擴容）：
+# kubectl run load-test --image=busybox --restart=Never -- \
+#   /bin/sh -c "while true; do wget -q -O- http://web-app-clusterip/; done"
+# kubectl get hpa -w    # 監看副本數變化
+# kubectl delete pod load-test
