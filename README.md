@@ -2,7 +2,7 @@
 
 1. Docker Labs: [https://docs.docker.com/guides/?tags=labs](https://docs.docker.com/guides/?tags=labs)  
 2. 測試指令環境：[https://killercoda.com/playgrounds](https://killercoda.com/playgrounds)  
-3. 課程用的github：  
+3. 課程用的github：[https://github.com/nickzhuang1/Deploy-Containerized-Apps](https://github.com/nickzhuang1/Deploy-Containerized-Apps)
 4. cAdvisor介紹：[https://blog.darkthread.net/blog/cadvisor-prometheus-grafana/](https://blog.darkthread.net/blog/cadvisor-prometheus-grafana/)  
 5. 什麼是CUDA：[https://blogs.nvidia.com/blog/what-is-cuda-2/](https://blogs.nvidia.com/blog/what-is-cuda-2/)  
 6. 映像支援表：[https://docs.nvidia.com/deeplearning/frameworks/support-matrix/index.html](https://docs.nvidia.com/deeplearning/frameworks/support-matrix/index.html)  
