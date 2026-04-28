@@ -14,8 +14,8 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 複製應用程式原始碼
-COPY . .
+# 只複製應用程式原始碼（不含 compose / shell 等檔案）
+COPY app.py .
 
 # 宣告容器監聽的 Port
 EXPOSE 5000
@@ -24,5 +24,5 @@ EXPOSE 5000
 RUN useradd -m appuser
 USER appuser
 
-# 啟動指令
-CMD ["python", "app.py"]
+# 用 gunicorn 啟動（requirements.txt 已包含）
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "app:app"]

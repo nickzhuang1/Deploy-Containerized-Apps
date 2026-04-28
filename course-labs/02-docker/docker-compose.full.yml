@@ -1,0 +1,45 @@
+# ============================================================
+# Docker Compose — Flask API + PostgreSQL（完整版）
+# app.py 會實際連線 DB，需用 app-with-db.py
+# 用法：
+#   docker compose -f docker-compose.full.yml up -d
+#   curl http://localhost:5000/
+#   curl http://localhost:5000/api/items
+#   curl -X POST http://localhost:5000/api/items \
+#        -H 'Content-Type: application/json' \
+#        -d '{"name": "test item"}'
+#   docker compose -f docker-compose.full.yml down -v
+# ============================================================
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.full       # 使用含 psycopg2 的 Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - APP_ENV=development
+      - DATABASE_URL=postgresql://appuser:secret@db:5432/mydb
+    depends_on:
+      db:
+        condition: service_healthy      # 等 DB 健康才啟動
+    restart: unless-stopped
+
+  db:
+    image: postgres:15-alpine
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: appuser
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: mydb
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U appuser -d mydb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  pgdata:
