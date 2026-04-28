@@ -13,22 +13,22 @@ docker run -it ubuntu bash               # 互動式進入 Ubuntu
 
 docker ps                                # 看執行中的容器
 docker ps -a                             # 看所有容器（含已停止）
-docker stop <container_id>              # 停止容器
-docker rm <container_id>                # 刪除容器
+docker stop <container_id>               # 停止容器
+docker rm <container_id>                 # 刪除容器
 
-docker images                           # 列出本機 Image
-docker pull python:3.10                 # 拉取 Image
-docker rmi <image>                      # 刪除 Image
+docker images                            # 列出本機 Image
+docker pull python:3.10                  # 拉取 Image
+docker rmi <image>                       # 刪除 Image
 
 # ════════════════════════════════════════
 # docker inspect
 # ════════════════════════════════════════
-docker inspect <container_id>                                   # 完整 JSON
-docker inspect -f '{{.NetworkSettings.IPAddress}}' nginx       # 取 IP
+docker inspect <container_id>                                 # 完整 JSON
+docker inspect -f '{{.NetworkSettings.IPAddress}}' nginx      # 取 IP
 docker inspect -f '{{json .Mounts}}' nginx | jq .             # 取 Volume
-docker inspect -f '{{json .Config.Env}}' nginx | jq .        # 取環境變數
-docker inspect myapp:v1 | jq '.[0].RootFS'                    # Image Layer
-docker inspect -f '{{.State.Pid}}' nginx                       # 取 PID
+docker inspect -f '{{json .Config.Env}}' nginx | jq .         # 取環境變數
+docker image inspect --format='{{json .RootFS.Layers}}' nginx # Image Layer
+docker inspect -f '{{.State.Pid}}' nginx                      # 取 PID
 
 # ════════════════════════════════════════
 # docker logs
@@ -47,10 +47,11 @@ docker logs nginx 2>&1 | grep ERROR                # 過濾 ERROR
 docker stats                                                     # 即時所有容器
 docker stats nginx                                               # 只看 nginx
 docker stats --no-stream                                         # 輸出一次後結束
-docker stats --format '{{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}' # 自訂格式
+docker stats --format '{{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}'   # 自訂格式
 
 # 設定資源限制
 docker run -d --memory='512m' --cpus='1.5' myapp:v1
+docker update --memory='512m' --cpus='1.5' nginx
 
 # ════════════════════════════════════════
 # Docker Volume
