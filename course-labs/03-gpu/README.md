@@ -89,7 +89,7 @@ Tesla V100-SXM2-32GB, 535.xx, 32510 MiB, 32000 MiB
 
 ```bash
 docker run -it --rm --gpus all \
-    nvidia/cuda:12.2.0-base-ubuntu22.04 \
+    nvcr.io/nvidia/pytorch:26.04-py3 \
     bash
 # 在容器內
 nvidia-smi
@@ -105,7 +105,7 @@ exit
 
 ```bash
 docker run --rm --gpus all \
-    pytorch/pytorch:2.1.0-cuda12.1-cudnn8-runtime \
+    nvcr.io/nvidia/pytorch:26.04-py3 \
     python3 -c "import torch; print(torch.cuda.is_available()); print(torch.cuda.get_device_name(0))"
 ```
 
@@ -113,7 +113,7 @@ docker run --rm --gpus all \
 
 ```bash
 docker run --rm --gpus '"device=0,1"' \
-    nvidia/cuda:12.2.0-base-ubuntu22.04 \
+    nvcr.io/nvidia/pytorch:26.04-py3 \
     nvidia-smi
 ```
 
