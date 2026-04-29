@@ -183,7 +183,7 @@ kubectl exec -it <pod-name> -- bash
 
 # ── port-forward（不用 NodePort 的快速測試）──────
 kubectl port-forward svc/web-app-clusterip 8080:80
-curl http://localhost:8080/health
+curl http://localhost:8080/
 ```
 
 ---
