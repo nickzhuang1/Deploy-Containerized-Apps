@@ -196,6 +196,12 @@ curl http://localhost:8080/
 # 安裝 Metrics Server（一次性）
 kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
 
+# patch（kubeadm 必做）
+kubectl patch deployment metrics-server -n kube-system \
+  --type='json' \
+  -p='[{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-insecure-tls"}]'
+
+
 # 套用 HPA
 kubectl apply -f hpa.yaml
 

@@ -20,7 +20,7 @@ spec:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: 50     # CPU 超過 50% 開始擴容
+          averageUtilization: 40     # CPU 超過 40% 開始擴容
     - type: Resource
       resource:
         name: memory
