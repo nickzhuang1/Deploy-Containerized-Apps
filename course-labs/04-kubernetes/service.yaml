@@ -1,5 +1,6 @@
 # ============================================================
 # Service — ClusterIP（內部）+ NodePort（對外測試）
+# 對應 deployment.yaml（nginx:1.25，port 80）
 # ============================================================
 
 # ── ClusterIP（預設，只在叢集內部存取）──────────────────────
@@ -14,7 +15,7 @@ spec:
   type: ClusterIP
   ports:
     - port: 80
-      targetPort: 5000
+      targetPort: 80
 
 # ── NodePort（對外暴露，適合測試環境）─────────────────────────
 ---
@@ -28,7 +29,7 @@ spec:
   type: NodePort
   ports:
     - port: 80
-      targetPort: 5000
+      targetPort: 80
       nodePort: 30080             # 30000–32767，不指定則隨機
 
 # 取得 NodePort

@@ -91,30 +91,46 @@ kubectl delete -f nginx-deploy.yaml
 
 ## Part 2：完整 Deployment 範本
 
+> 使用 `nginx:1.25` 作為示範 image，不需要自建 image 即可直接跑。
+
 ### 套用
 
 ```bash
-# 先確認 Image 存在（或改為可用的 Image）
 kubectl apply -f deployment.yaml
 kubectl apply -f service.yaml
+kubectl rollout status deployment/web-app
 ```
 
-> `deployment.yaml` 包含：
-> - `rollingUpdate.maxUnavailable: 0`（零停機更新）
-> - Readiness / Liveness Probe
-> - Resource requests & limits
+### 確認 Pod 狀態
 
-### 驗證 Probe
+```bash
+kubectl get pods -l app=web -o wide
+```
+
+預期三個 Pod 都 Running（readinessProbe 通過後才 READY 1/1）：
+```
+NAME                       READY   STATUS    NODE
+web-app-xxx-aaa            1/1     Running   controlplane
+web-app-xxx-bbb            1/1     Running   controlplane
+web-app-xxx-ccc            1/1     Running   controlplane
+```
+
+### 展示 Probe 設定
 
 ```bash
 kubectl describe pod -l app=web | grep -A5 "Liveness\|Readiness"
 ```
 
+> `deployment.yaml` 展示的功能：
+> - `rollingUpdate.maxUnavailable: 0`（零停機更新）
+> - Readiness / Liveness Probe（探測 `GET /` port 80）
+> - Resource requests & limits
+
 ### 存取（NodePort 30080）
 
 ```bash
 NODE_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="InternalIP")].address}')
-curl http://${NODE_IP}:30080/health
+curl http://${NODE_IP}:30080
 ```
 
 ---

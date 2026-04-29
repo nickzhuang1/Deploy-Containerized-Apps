@@ -1,6 +1,11 @@
 # ============================================================
-# 基本 Deployment — 課程範例 Web App
-# 用法：kubectl apply -f deployment.yaml
+# 完整 Deployment 範本 — 課程示範用（使用 nginx:1.25）
+# 展示：RollingUpdate / Resource Limits / Readiness + Liveness Probe
+#
+# 用法：
+#   kubectl apply -f deployment.yaml
+#   kubectl apply -f service.yaml
+#   kubectl rollout status deployment/web-app
 # ============================================================
 apiVersion: apps/v1
 kind: Deployment
@@ -18,7 +23,7 @@ spec:
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 1
-      maxUnavailable: 0              # 零停機更新
+      maxUnavailable: 0              # 零停機更新：保持所有舊 Pod Running 直到新的 Ready
   template:
     metadata:
       labels:
@@ -26,30 +31,27 @@ spec:
     spec:
       containers:
         - name: web
-          image: myapp:v1            # ← 改成你的 Image
+          image: nginx:1.25          # 直接用 nginx，不需要自建 image
           ports:
-            - containerPort: 5000
-          env:
-            - name: APP_ENV
-              value: "production"
+            - containerPort: 80
           resources:
             requests:
-              cpu: "250m"
-              memory: "128Mi"
+              cpu: "100m"
+              memory: "64Mi"
             limits:
-              cpu: "500m"
-              memory: "256Mi"
-          # Readiness Probe：Pod 就緒才接流量
+              cpu: "200m"
+              memory: "128Mi"
+          # Readiness Probe：回應 200 才接流量
           readinessProbe:
             httpGet:
-              path: /health
-              port: 5000
+              path: /
+              port: 80
             initialDelaySeconds: 5
             periodSeconds: 10
           # Liveness Probe：掛掉自動重啟
           livenessProbe:
             httpGet:
-              path: /health
-              port: 5000
+              path: /
+              port: 80
             initialDelaySeconds: 15
             periodSeconds: 20
