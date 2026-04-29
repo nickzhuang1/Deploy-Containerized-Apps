@@ -15,6 +15,8 @@ spec:
       labels:
         app: flask-demo
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: controlplane  # image 只在 controlplane，強制排程在此
       containers:
       - name: flask-demo
         # ── 單節點（kind / minikube / 本機）：保持 flask-demo:v1 + Never
