@@ -10,6 +10,11 @@ FROM python:3.10-slim
 # 設定工作目錄
 WORKDIR /app
 
+# 安裝系統工具（slim image 預設不含 ps / curl 等）
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        procps \
+    && rm -rf /var/lib/apt/lists/*
+
 # 先複製 requirements 並安裝（利用 Docker layer cache）
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
