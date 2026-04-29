@@ -28,12 +28,24 @@ spec:
           type: Utilization
           averageUtilization: 80     # 記憶體超過 80% 也觸發擴容
 
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 0      # 擴容不等待，立即反應
+      policies:
+        - type: Pods
+          value: 2
+          periodSeconds: 15              # 每 15 秒最多加 2 個 Pod
+    scaleDown:
+      stabilizationWindowSeconds: 30     # 縮容冷卻 30 秒（預設 300，示範用縮短）
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 15              # 每 15 秒最多減 1 個 Pod
+
 # ── 驗證指令 ─────────────────────────────────────────────────
 # kubectl get hpa
 # kubectl describe hpa web-app-hpa
 #
-# 壓力測試（觀察自動擴容）：
-# kubectl run load-test --image=busybox --restart=Never -- \
-#   /bin/sh -c "while true; do wget -q -O- http://web-app-clusterip/; done"
-# kubectl get hpa -w    # 監看副本數變化
-# kubectl delete pod load-test
+# 套用後即時生效：
+# kubectl apply -f hpa.yaml
+# kubectl get hpa -w
