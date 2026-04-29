@@ -207,15 +207,45 @@ kubectl describe hpa web-app-hpa
 ### 壓力測試觀察自動擴容
 
 ```bash
-# 打開第二個終端機監看副本數
+# 終端機 A：監看 HPA 副本數變化
 kubectl get hpa -w
+```
 
-# 產生負載
-kubectl run load-test --image=busybox --restart=Never -- \
-  /bin/sh -c "while true; do wget -q -O- http://web-app-clusterip/; done"
+開另一個終端機（終端機 B）產生負載，用 Deployment 並發 10 個 worker 同時打：
 
-# 結束壓測
-kubectl delete pod load-test
+```bash
+# 啟動 10 個 worker 並發打 ClusterIP
+kubectl create deployment load-test \
+  --image=busybox \
+  --replicas=10 \
+  -- /bin/sh -c "while true; do wget -q -O /dev/null http://web-app-clusterip/; done"
+
+# 確認 load-test pod 都在跑
+kubectl get pods -l app=load-test
+```
+
+約 30–60 秒後（HPA 預設每 15 秒評估一次），終端機 A 應看到 REPLICAS 數字上升：
+```
+NAME           REFERENCE             TARGETS        MINPODS   MAXPODS   REPLICAS
+web-app-hpa    Deployment/web-app    8%/50%         2         10        2
+web-app-hpa    Deployment/web-app    63%/50%        2         10        2
+web-app-hpa    Deployment/web-app    63%/50%        2         10        4     ← 擴容
+web-app-hpa    Deployment/web-app    41%/50%        2         10        4
+```
+
+如果 CPU 仍然不夠高，可以再加 replica 數：
+```bash
+kubectl scale deployment load-test --replicas=20
+```
+
+### 結束壓測
+
+```bash
+# 刪除 load-test，HPA 會在 5 分鐘冷卻後縮回 minReplicas
+kubectl delete deployment load-test
+
+# 監看縮容（需等 5 分鐘，HPA scaleDown 預設 stabilizationWindowSeconds: 300）
+kubectl get hpa -w
 ```
 
 ---
