@@ -21,6 +21,31 @@
 
 ---
 
+## 事前準備（上課前做一次）
+
+### 安裝 Metrics Server
+
+`kubectl top` 需要 Metrics Server。kubeadm 環境的 kubelet 使用自簽憑證，需要加 `--kubelet-insecure-tls`：
+
+```bash
+# 安裝
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+
+# kubeadm 環境必須加這個 patch，否則 Metrics Server 會一直 CrashLoop
+kubectl patch deployment metrics-server -n kube-system \
+  --type='json' \
+  -p='[{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-insecure-tls"}]'
+
+# 等待就緒（約 30 秒）
+kubectl rollout status deployment/metrics-server -n kube-system
+
+# 確認可用
+kubectl top nodes
+kubectl top pods -A
+```
+
+---
+
 ## 事前確認
 
 ```bash
